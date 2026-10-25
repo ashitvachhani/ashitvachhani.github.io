@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ashit Vachhani</title>
+<meta name="description" content="Ashit Vachhani — I turn manual workflows into AI-powered automations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body { margin: 0; } [hidden] { display: none !important; } img { max-width: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Layout: a workflow you trigger. Intro (monogram) → persona chooser → one of four paths. Header carries the persona switcher and a live "hours saved" counter. */
+:root {
+  --paper: #F3F5F7;
+  --card: #FFFFFF;
+  --ink: #0F1B2D;
+  --muted: #5A6577;
+  --line: #DCE1E8;
+  --signal: #E8552B;
+  --signal-soft: #FCE7DF;
+  --node: #1F6F78;
+  --node-soft: #DDEFF0;
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0D141F; --card: #141D2B; --ink: #E7ECF3; --muted: #9AA6B8; --line: #26324A;
+  --signal: #FF7A50; --signal-soft: #3A1E14; --node: #5CC2CB; --node-soft: #12313A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0D141F; --card: #141D2B; --ink: #E7ECF3; --muted: #9AA6B8; --line: #26324A;
+  --signal: #FF7A50; --signal-soft: #3A1E14; --node: #5CC2CB; --node-soft: #12313A; color-scheme: dark }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+a { color: var(--node); }
+button { font: inherit; cursor: pointer; color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 6px; }
+.mono { font-family: var(--mono); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.4rem, 3.4vw, 2rem); letter-spacing: -0.01em; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--signal); }
+
+/* ---------- Intro ---------- */
+.screen { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-block: 48px; text-align: center; gap: 28px; }
+.mono-btn { background: none; border: 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.monogram { font-family: var(--display); font-weight: 800; font-size: clamp(5rem, 22vw, 12rem); line-height: 0.9; letter-spacing: -0.04em; color: var(--ink); position: relative; }
+.monogram .dot { color: var(--signal); }
+.run { font-family: var(--mono); font-size: 0.95rem; color: var(--muted); display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+.run svg { color: var(--signal); }
+.mono-btn:hover .run { border-color: var(--signal); color: var(--ink); }
+.intro-sub { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); margin-top: -14px; }
+.intro-name { font-family: var(--display); font-weight: 500; font-size: clamp(1.05rem, 3vw, 1.5rem); letter-spacing: 0.01em; }
+.intro-name span { color: var(--signal); font-weight: 700; }
+
+/* ---------- Chooser ---------- */
+.chooser h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.6rem, 5vw, 2.8rem); }
+.chooser .hint { color: var(--muted); font-family: var(--mono); font-size: 0.85rem; }
+.personas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: 100%; max-width: 980px; }
+@media (max-width: 860px) { .personas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .personas { grid-template-columns: 1fr; } }
+.persona { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 18px 18px; text-align: left; display: flex; flex-direction: column; gap: 12px; min-height: 190px; transition: transform .15s ease, border-color .15s ease; }
+.persona:hover { border-color: var(--signal); transform: translateY(-3px); }
+.persona .ico { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; background: var(--node-soft); color: var(--node); }
+.persona strong { font-size: 1.1rem; }
+.persona span { color: var(--muted); font-size: 0.92rem; }
+.persona code { margin-top: auto; font-family: var(--mono); font-size: 0.75rem; color: var(--signal); }
+
+/* ---------- Run animation ---------- */
+.runner { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 0.85rem; }
+.rnode { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--muted); }
+.rnode.on { border-color: var(--node); color: var(--ink); background: var(--node-soft); }
+.rarrow { color: var(--line); }
+.rarrow.on { color: var(--node); }
+
+/* ---------- Site header ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+.top .wrap { display: flex; align-items: center; gap: 14px; padding-block: 10px; flex-wrap: wrap; }
+.logo { font-family: var(--display); font-weight: 800; font-size: 1.15rem; background: none; border: 0; padding: 4px 0; }
+.logo .dot { color: var(--signal); }
+.switch { display: flex; gap: 6px; flex-wrap: wrap; }
+.switch button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 12px; font-size: 0.85rem; color: var(--muted); }
+.switch button[aria-current="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.counter { margin-left: auto; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-align: right; }
+.counter b { color: var(--signal); font-weight: 500; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .counter { margin-left: 0; width: 100%; text-align: left; } }
+
+/* ---------- Views ---------- */
+#archive-section { scroll-margin-top: 90px; }
+.view { padding-block: 44px 72px; display: flex; flex-direction: column; gap: 44px; }
+.hero { display: flex; flex-direction: column; gap: 14px; }
+.hero h1 { font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.05; letter-spacing: -0.02em; }
+.hero .lede { font-size: clamp(1.1rem, 2.4vw, 1.35rem); max-width: 40ch; }
+.hero .meta { color: var(--muted); font-family: var(--mono); font-size: 0.85rem; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat b { font-family: var(--display); font-weight: 700; font-size: clamp(1.5rem, 4vw, 2rem); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 0.88rem; line-height: 1.35; }
+.section { display: flex; flex-direction: column; gap: 18px; }
+.section > p.intro { color: var(--muted); max-width: 64ch; }
+.tldr { display: grid; grid-template-columns: 150px 1fr; gap: 10px 22px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+.tldr dt { font-family: var(--mono); font-size: 0.82rem; color: var(--signal); padding-top: 2px; }
+.tldr dd { margin: 0; }
+@media (max-width: 560px) { .tldr { grid-template-columns: 1fr; } .tldr dd { margin-bottom: 8px; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; background: var(--node-soft); color: var(--node); }
+.cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--ink); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn:hover { border-color: var(--signal); }
+
+/* Case studies */
+.cases { display: flex; flex-direction: column; gap: 14px; }
+.case { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.case > button { width: 100%; background: none; border: 0; text-align: left; padding: 20px 22px; display: grid; grid-template-columns: auto 1fr auto; gap: 6px 18px; align-items: start; }
+.case .num { font-family: var(--mono); color: var(--signal); font-size: 0.85rem; padding-top: 3px; }
+.case .title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.case .title span { color: var(--muted); font-size: 0.95rem; }
+.case .impact { font-family: var(--mono); font-size: 0.8rem; text-align: right; white-space: nowrap; }
+.case .impact b { display: block; font-family: var(--display); font-size: 1.3rem; color: var(--ink); font-weight: 700; }
+.case .body { padding: 0 22px 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
+.case .body[hidden] { display: none !important; }
+.case .body .full { grid-column: 1 / -1; }
+.case .body h4 { margin: 0 0 6px; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.case .body ol, .case .body ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 640px) { .case > button { grid-template-columns: auto 1fr; } .case .impact { grid-column: 2; text-align: left; } .case .body { grid-template-columns: 1fr; } }
+.badge { display: inline-block; font-family: var(--mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; background: var(--signal-soft); color: var(--signal); margin-left: 6px; vertical-align: 2px; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.8rem; }
+.flow .n { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--node); background: var(--node-soft); color: var(--ink); }
+.flow .n.human { border-style: dashed; border-color: var(--signal); background: var(--signal-soft); }
+.flow .a { color: var(--muted); }
+
+.more { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; border: 1px dashed var(--line); border-radius: 14px; padding: 18px 22px; }
+.more div { display: flex; flex-direction: column; gap: 2px; }
+.more span { color: var(--muted); font-size: 0.95rem; }
+/* Builder diagram */
+.arch { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; align-items: center; gap: 10px; }
+.arch .col { display: flex; flex-direction: column; gap: 10px; }
+.arch .box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 0.9rem; background: var(--paper); }
+.arch .box b { display: block; font-family: var(--mono); font-size: 0.78rem; color: var(--node); font-weight: 500; margin-bottom: 2px; }
+.arch .box.core { border-color: var(--node); background: var(--node-soft); }
+.arch .arr { text-align: center; color: var(--muted); font-family: var(--mono); }
+@media (max-width: 760px) { .arch { grid-template-columns: 1fr; } .arch .arr { transform: rotate(90deg); } }
+.principles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .principles { grid-template-columns: 1fr; } }
+.principle { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.principle b { font-weight: 600; }
+.principle span { color: var(--muted); font-size: 0.95rem; }
+.loop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: var(--mono); font-size: 0.85rem; }
+.loop .n { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+.demos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .demos { grid-template-columns: 1fr; } }
+.demo { border: 1px dashed var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.demo .soon { font-family: var(--mono); font-size: 0.72rem; color: var(--signal); }
+
+/* Curious */
+.timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 18px; }
+.timeline li { position: relative; padding-left: 22px; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--node); }
+.timeline li.now::before { background: var(--signal); border-color: var(--signal); }
+.timeline .when { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+.archive { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .archive { grid-template-columns: 1fr; } }
+.arc { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.arc .top-row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.pill { font-family: var(--mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.live { background: var(--node-soft); color: var(--node); }
+.pill.retired { background: var(--line); color: var(--muted); }
+.pill.proto { background: var(--signal-soft); color: var(--signal); }
+.arc span { color: var(--muted); font-size: 0.95rem; }
+
+footer { border-top: 1px solid var(--line); padding-block: 28px 40px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; }
+footer p { color: var(--muted); font-size: 0.9rem; }
+.copy { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-family: var(--mono); font-size: 0.8rem; }
+
+.fade { animation: fade .35s ease both; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fade { animation: none; } .persona, .persona:hover { transition: none; transform: none; } }
+</style>
+</head>
+<body>
+<!-- INTRO -->
+<section id="intro" class="screen wrap">
+  <button class="mono-btn" id="startBtn" type="button" aria-label="Start: choose who you are">
+    <span class="monogram">AMV<span class="dot">.</span></span>
+    <span class="run"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg> run workflow</span>
+  </button>
+  <p class="intro-name"><span>A</span>shit <span>M</span>ahesh <span>V</span>achhani</p>
+  <p class="intro-sub">I turn manual workflows into AI-powered automations</p>
+</section>
+
+<!-- CHOOSER -->
+<section id="who" class="screen wrap chooser" hidden>
+  <p class="eyebrow">trigger required</p>
+  <h1>Who's triggering this workflow?</h1>
+  <div class="personas">
+    <button class="persona" type="button" data-go="recruiter">
+      <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      <strong>Recruiter</strong><span>The 30-second version: impact, skills, how to reach me.</span><code>on: recruiter.visit</code>
+    </button>
+    <button class="persona" type="button" data-go="manager">
+      <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6M7 17h8"/></svg></span>
+      <strong>Hiring manager</strong><span>Case studies: the problem, what I built, what changed.</span><code>on: manager.deep_dive</code>
+    </button>
+    <button class="persona" type="button" data-go="builder">
+      <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span>
+      <strong>Fellow builder</strong><span>Architecture, stack, and how I build with Claude.</span><code>on: builder.inspect</code>
+    </button>
+    <button class="persona" type="button" data-go="curious">
+      <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span>
+      <strong>Just curious</strong><span>The story, the full archive, and what's next.</span><code>on: curious.wander</code>
+    </button>
+  </div>
+  <div class="runner" id="runner" aria-live="polite" hidden>
+    <span class="rnode" id="r1">trigger</span><span class="rarrow" id="a1">→</span>
+    <span class="rnode" id="r2">process</span><span class="rarrow" id="a2">→</span>
+    <span class="rnode" id="r3">output</span>
+  </div>
+  <p class="hint">Tip: you can switch paths anytime from the top bar.</p>
+</section>
+
+<!-- SITE -->
+<div id="site" hidden>
+  <header class="top">
+    <div class="wrap">
+      <button class="logo" type="button" id="logoBtn" aria-label="Back to the start">AMV<span class="dot">.</span></button>
+      <nav class="switch" aria-label="Choose a path">
+        <button type="button" data-go="recruiter">Recruiter</button>
+        <button type="button" data-go="manager">Hiring manager</button>
+        <button type="button" data-go="builder">Builder</button>
+        <button type="button" data-go="curious">Curious</button>
+      </nav>
+      <p class="counter">Since you arrived, my automations have saved <b id="saved">0 min</b> of someone's day</p>
+    </div>
+  </header>
+
+  <main>
+  <!-- RECRUITER -->
+  <section class="view wrap" id="v-recruiter" hidden>
+    <div class="hero">
+      <p class="eyebrow">recruiter.visit → summary</p>
+      <h1>Ashit Vachhani</h1>
+      <p class="lede">I turn manual workflows into AI-powered automations, and I lead the team that ships them.</p>
+      <p class="meta">Automations Team Lead · San Francisco Bay Area · Open to Bay Area, remote, or relocation</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>50+</b><span>automations live firm-wide, across my team's portfolio</span></div>
+      <div class="stat"><b>860+</b><span>hours saved every month by that portfolio</span></div>
+      <div class="stat"><b>20+</b><span>automations I designed and built myself</span></div>
+      <div class="stat"><b>6</b><span>people led, across time zones</span></div>
+    </div>
+    <div class="section">
+      <h2>In 30 seconds</h2>
+      <dl class="tldr">
+        <dt>What I do</dt><dd>Find the processes that eat a team's hours, design the fix, build it, and get people to actually use it.</dd>
+        <dt>How</dt><dd>Hands-on in Google Apps Script, Python, SQL and VBA, with Claude as my build partner, connected to tools like Linear, Google Workspace and Microsoft Teams.</dd>
+        <dt>How I lead</dt><dd>Every automation gets a charter and an ROI estimate; a 95-project pipeline is prioritized by payback; a support desk tracks how fast we fix what breaks.</dd>
+        <dt>Background</dt><dd>~5 years across business analysis, analytics and automation. MS in Management Information Systems, University of Arizona.</dd>
+        <dt>Looking for</dt><dd>Automation Lead / Analyst, AI Operations, AI Enablement, and AI Solutions roles.</dd>
+      </dl>
+    </div>
+    <div class="section">
+      <h2>Skills</h2>
+      <div class="chips">
+        <span class="chip">Workflow automation</span><span class="chip">Google Apps Script</span><span class="chip">Claude API</span><span class="chip">LLM prompting &amp; structured output</span><span class="chip">REST / GraphQL APIs</span><span class="chip">Linear</span><span class="chip">Google Workspace</span><span class="chip">Power Automate</span><span class="chip">VBA</span><span class="chip">Python (pandas, statsmodels)</span><span class="chip">SQL</span><span class="chip">Dashboards</span><span class="chip">ROI modeling</span><span class="chip">Requirements &amp; UAT</span><span class="chip">Team leadership</span>
+      </div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="mailto:vachhaniashit8@gmail.com">Email me</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/ashit-vachhani" target="_blank" rel="noopener">LinkedIn</a>
+      <button class="btn ghost" type="button" data-go="manager">See the case studies →</button>
+    </div>
+  </section>
+
+  <!-- MANAGER -->
+  <section class="view wrap" id="v-manager" hidden>
+    <div class="hero">
+      <p class="eyebrow">manager.deep_dive → case studies</p>
+      <h1>Five systems, and why they work</h1>
+      <p class="lede">Each one started as a manual process someone dreaded. Open any of them for the problem, the build, and the result.</p>
+    </div>
+    <div class="cases" id="cases"></div>
+    <div class="more">
+      <div><b id="moreCount">More I've built</b><span>Smaller tools, retired systems and a prototype that taught me a lot.</span></div>
+      <button class="btn ghost" type="button" data-go="curious" data-scroll="archive-section">See the archive →</button>
+    </div>
+    <div class="section">
+      <h2>How I run automation as a program</h2>
+      <div class="principles">
+        <div class="principle"><b>A charter for every initiative</b><span>Scope, owner and expected return are agreed before anything is built.</span></div>
+        <div class="principle"><b>Prioritized by payback</b><span>An ROI model (time saved, cost saved, monthly return, payback period) ranks a 95-project pipeline.</span></div>
+        <div class="principle"><b>A support desk for automations</b><span>Anyone can report what's broken; turnaround is measured, not guessed.</span></div>
+        <div class="principle"><b>Quality gates built into the workflow</b><span>I designed and led an AI writing-quality check that runs before deliverables reach leadership, so managers stopped repeating the same feedback.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUILDER -->
+  <section class="view wrap" id="v-builder" hidden>
+    <div class="hero">
+      <p class="eyebrow">builder.inspect → architecture</p>
+      <h1>How the pieces fit</h1>
+      <p class="lede">Most of my systems share one data layer. Build the integration once, and every dashboard, report and deck runs on it.</p>
+    </div>
+    <div class="arch" role="img" aria-label="Architecture: Linear API feeds an extraction script, which writes a single data table in Google Sheets; dashboards, an output-credit engine and a deck generator all read from it. Intake and helpdesk sheets write back to Linear through validated pushes.">
+      <div class="col">
+        <div class="box"><b>source</b>Linear (GraphQL API)</div>
+        <div class="box"><b>write-backs</b>Project intake &amp; helpdesk sheets → validated, logged pushes</div>
+      </div>
+      <div class="arr">→</div>
+      <div class="col">
+        <div class="box core"><b>data layer</b>Apps Script extraction, 2× daily + on demand → one row per issue, 28 fields (team → project → milestone → issue)</div>
+      </div>
+      <div class="arr">→</div>
+      <div class="col">
+        <div class="box"><b>reads</b>Status dashboards</div>
+        <div class="box"><b>reads</b>Output-credit (RVU) rankings</div>
+        <div class="box"><b>reads</b>Auto-paginated slide decks</div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>How I build with Claude</h2>
+      <p class="intro">The solution design is mine. I map the manual process and sketch how to fix it before Claude sees it. Then Claude becomes my sparring partner: I ask it to check feasibility and to break my design, so the weak spots show up before the code does.</p>
+      <div class="loop"><span class="n">map the manual process</span><span>→</span><span class="n">design my solution</span><span>→</span><span class="n">Claude stress-tests it</span><span>→</span><span class="n">fit the pieces together</span><span>→</span><span class="n">write &amp; diagnose the code</span><span>→</span><span class="n">refine in real use</span></div>
+      <p class="intro">Inside the tools, Claude does the judgment work: summarizing emails into a fixed structure, and choosing next steps from a curated library instead of inventing them.</p>
+    </div>
+    <div class="section">
+      <h2>Design principles</h2>
+      <div class="principles">
+        <div class="principle"><b>Day-one answer, then iterate</b><span>I get to a working prototype fast and improve it through real use, instead of spending months chasing a perfect answer on paper.</span></div>
+        <div class="principle"><b>One click before fully automatic</b><span>A person approves until the output has earned trust. Then the human step can go.</span></div>
+        <div class="principle"><b>Validate and log every write</b><span>Bad rows are rejected with a reason; every push to another system is timestamped.</span></div>
+        <div class="principle"><b>Build the data layer once</b><span>One clean extraction feeds everything, so new reports need formulas, not new integrations.</span></div>
+        <div class="principle"><b>Libraries over hard-coding</b><span>Standard steps live in an editable library anyone can extend, so tribal knowledge becomes a shared playbook.</span></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>Stack</h2>
+      <div class="chips"><span class="chip">Google Apps Script (JS)</span><span class="chip">Claude API</span><span class="chip">Linear GraphQL API</span><span class="chip">Google Sheets</span><span class="chip">Google Slides</span><span class="chip">Microsoft Teams</span><span class="chip">Power Automate</span><span class="chip">VBA</span><span class="chip">Python</span><span class="chip">SQL</span></div>
+    </div>
+    <div class="section">
+      <h2>Open-source demos</h2>
+      <p class="intro">Clean rebuilds on my own accounts with sample data, so you can try them.</p>
+      <div class="demos">
+        <div class="demo"><span class="soon">coming soon</span><b>Inbox to Action</b><span>Gmail → sheet log → Claude summary → one-click tasks → Slack/Teams post with approval.</span></div>
+        <div class="demo"><span class="soon">coming soon</span><b>Linear → Sheets exporter</b><span>Flatten a Linear workspace into one analysis-ready table on a schedule.</span></div>
+        <div class="demo"><span class="soon">coming soon</span><b>Project in 20 seconds</b><span>Intake form + step library → a project and all its tasks, in one click.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CURIOUS -->
+  <section class="view wrap" id="v-curious" hidden>
+    <div class="hero">
+      <p class="eyebrow">curious.wander → the story</p>
+      <h1>From analyst to builder</h1>
+      <p class="lede">I didn't set out to build software. I kept finding work that a script could do better, and Claude turned that habit into a career.</p>
+    </div>
+    <div class="section">
+      <h2>How I got here</h2>
+      <ol class="timeline">
+        <li><p class="when">2017 – 2021</p><p><b>NMIMS, Mumbai.</b> B.Tech in Computer Engineering.</p></li>
+        <li><p class="when">2020 – 2021</p><p><b>First Economy</b>, Business Analyst. Web solutions for e-commerce, real estate and education clients, plus campaign analytics.</p></li>
+        <li><p class="when">2021 – 2022</p><p><b>Callify.ai</b>, Business Analyst. Recruitment-tech workflows: automated reminders and no-show detection that cut missed interviews by 18%.</p></li>
+        <li><p class="when">2022 – 2023</p><p><b>University of Arizona, Eller College of Management.</b> MS in Management Information Systems, graduating with a 3.85 GPA and named to the Dean's List for academic excellence.</p></li>
+        <li><p class="when">2023</p><p><b>Entrepreneurs of Tomorrow</b>, Project Management &amp; Automation Intern. Rebuilt student registration as an automated workflow.</p></li>
+        <li><p class="when">2024</p><p><b>Xelay Acumen</b>, a pharma analytics consulting firm in San Mateo. Joined as an Analyst, running statistical analyses for drug programs, and immediately started templating the repetitive parts.</p></li>
+        <li><p class="when">2025</p><p>Senior Analyst. Automating everything around the analysis: intake, reporting, decks.</p></li>
+        <li class="now"><p class="when">2026 → now</p><p>Automations Team Lead: six people, a 95-project pipeline, 50+ automations live.</p></li>
+      </ol>
+    </div>
+    <div class="section">
+      <h2>What gets me going</h2>
+      <p class="intro">My rule is simple: the first time, I do it by hand. The second time, especially if it's mind-numbingly manual, I'm already sketching how to automate it. There is no third time. Long before AI, when I started in data analysis, I noticed we ran the same analyses for client after client. So I built Excel templates: paste the data into the right columns and the tabs worked out the results on their own, turning hours of repeat work into under 30 minutes.</p>
+      <p class="intro">Then I pushed the idea further. I added a reference table that maps where every kind of data belongs, so the template could handle any data transformation: a few dropdown selections, and the analysis was done. Claude has just raised the ceiling on what I can build.</p>
+      <p class="intro">I'm proud of everything I've built, but the part I love most is the building itself. When someone tells me one of my tools gave them their time back, that's what makes me want to build the next one.</p>
+    </div>
+    <div class="section">
+      <h2>Working with me</h2>
+      <div class="principles">
+        <div class="principle"><b>Fun, with a bias to innovate</b><span>That's how I'd hope my team describes it. We try things, ship them, and laugh about the ones that break.</span></div>
+        <div class="principle"><b>Nothing held back</b><span>I teach my team every tactic that's helped my career, and I take the time to learn from them. Learning from the people around you is the easiest win there is.</span></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>Off the clock</h2>
+      <div class="chips"><span class="chip">gym</span><span class="chip">the occasional gaming session</span><span class="chip">trying new food</span><span class="chip">travel</span></div>
+    </div>
+    <div class="section" id="archive-section">
+      <h2>The archive</h2>
+      <p class="intro">More of what I've built, including the retired ones and the one that didn't ship. This list keeps growing.</p>
+      <div class="archive" id="archive"></div>
+    </div>
+    <div class="section">
+      <h2>What's next</h2>
+      <p class="intro">A small device I can talk to: microphone, speaker, and Claude on the other end. Because the best automation is the one you can just ask.</p>
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Ashit Vachhani · <span class="mono" id="mail">vachhaniashit8@gmail.com</span> <button class="copy" type="button" id="copyBtn">copy</button></p>
+      <p><a href="https://www.linkedin.com/in/ashit-vachhani" target="_blank" rel="noopener">LinkedIn</a> · Project details are described generally; no client or company data is shown.</p>
+    </div>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  var CASES = (window.SITE && window.SITE.cases) || [];
+  var ARCHIVE = (window.SITE && window.SITE.archive) || [];
+  var VIEWS = ["recruiter", "manager", "builder", "curious"];
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  // Build case studies
+  CASES.forEach(function (c, i) {
+    var wrap = el("article", "case");
+    var btn = el("button"); btn.type = "button"; btn.setAttribute("aria-expanded", i === 0 ? "true" : "false");
+    btn.appendChild(el("span", "num", String(i + 1).padStart(2, "0")));
+    var title = el("span", "title"); var h = el("h3", null, c.t); var badge = el("span", "badge", c.built); h.appendChild(badge);
+    title.appendChild(h); title.appendChild(el("span", null, c.s)); btn.appendChild(title);
+    var imp = el("span", "impact mono"); var b = el("b", null, c.imp); imp.appendChild(b); imp.appendChild(document.createTextNode(c.unit || "hrs saved / month")); btn.appendChild(imp);
+    var body = el("div", "body"); body.hidden = i !== 0;
+    var p1 = el("div"); p1.appendChild(el("h4", null, "The problem")); p1.appendChild(el("p", null, c.prob)); body.appendChild(p1);
+    var p2 = el("div"); p2.appendChild(el("h4", null, "What I built")); var ol = el("ol"); c.how.forEach(function (x) { ol.appendChild(el("li", null, x)); }); p2.appendChild(ol); body.appendChild(p2);
+    var p3 = el("div", "full"); p3.appendChild(el("h4", null, "How it flows")); var fl = el("div", "flow");
+    c.flow.forEach(function (x, k) { if (k) fl.appendChild(el("span", "a", "→")); fl.appendChild(el("span", "n" + (c.human.indexOf(k) > -1 ? " human" : ""), x)); });
+    p3.appendChild(fl); body.appendChild(p3);
+    var p4 = el("div", "full"); p4.appendChild(el("h4", null, "Why it works")); p4.appendChild(el("p", null, c.why)); body.appendChild(p4);
+    btn.addEventListener("click", function () { var open = body.hidden; body.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+    wrap.appendChild(btn); wrap.appendChild(body); $("cases").appendChild(wrap);
+  });
+  ARCHIVE.forEach(function (a) {
+    var c = el("div", "arc"); var r = el("div", "top-row"); r.appendChild(el("b", null, a.t));
+    r.appendChild(el("span", "pill " + a.st, a.st === "proto" ? "prototype" : a.st)); c.appendChild(r);
+    c.appendChild(el("span", null, a.s)); if (a.n) c.appendChild(el("span", "mono", a.n)); $("archive").appendChild(c);
+  });
+
+  $("moreCount").textContent = ARCHIVE.length + " more builds, and counting";
+  function show(id) { ["intro", "who", "site"].forEach(function (s) { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+  function openView(v) {
+    show("site");
+    VIEWS.forEach(function (x) { $("v-" + x).hidden = x !== v; });
+    document.querySelectorAll(".switch button").forEach(function (b) { b.setAttribute("aria-current", String(b.dataset.go === v)); });
+    var cur = $("v-" + v); cur.classList.remove("fade"); void cur.offsetWidth; cur.classList.add("fade");
+    try { history.replaceState(null, "", "#" + v); } catch (e) {}
+  }
+  function runThen(v) {
+    if (reduce) { openView(v); return; }
+    var r = $("runner"); r.hidden = false;
+    var steps = [["r1"], ["a1", "r2"], ["a2", "r3"]];
+    ["r1","r2","r3","a1","a2"].forEach(function (id) { $(id).classList.remove("on"); });
+    steps.forEach(function (ids, i) { setTimeout(function () { ids.forEach(function (id) { $(id).classList.add("on"); }); }, 220 * i); });
+    setTimeout(function () { r.hidden = true; openView(v); }, 220 * steps.length + 180);
+  }
+
+  $("startBtn").addEventListener("click", function () { show("who"); try { history.replaceState(null, "", "#who"); } catch (e) {} });
+  $("logoBtn").addEventListener("click", function () { show("intro"); try { history.replaceState(null, "", location.pathname); } catch (e) {} });
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-go]"); if (!t) return;
+    if (t.classList.contains("persona")) runThen(t.dataset.go); else openView(t.dataset.go);
+    if (t.dataset.scroll) { var target = $(t.dataset.scroll); if (target) setTimeout(function () { target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }, 60); }
+  });
+  document.addEventListener("keydown", function (e) { if (!$("intro").hidden && (e.key === "Enter" || e.key === " ") && document.activeElement === document.body) { e.preventDefault(); $("startBtn").click(); } });
+
+  $("copyBtn").addEventListener("click", function () {
+    var txt = $("mail").textContent, b = $("copyBtn");
+    function done() { b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1500); }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { var r = document.createRange(); r.selectNodeContents($("mail")); var s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+  });
+
+  // Live counter: ~570 hours/month from my own builds → hours saved per real second
+  var RATE = ((window.SITE && window.SITE.hoursSavedPerMonth) || 570) * 3600 / (30 * 24 * 3600); // seconds saved per second ≈ 0.79
+  var t0 = Date.now();
+  setInterval(function () {
+    var secs = (Date.now() - t0) / 1000 * RATE;
+    $("saved").textContent = secs < 60 ? Math.floor(secs) + " sec" : (secs / 60).toFixed(1) + " min";
+  }, 1000);
+
+  var h = (location.hash || "").replace("#", "");
+  if (VIEWS.indexOf(h) > -1) openView(h); else if (h === "who") show("who"); else show("intro");
+})();
+</script>
+</body>
+</html>
